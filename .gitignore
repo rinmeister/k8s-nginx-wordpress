@@ -8,5 +8,6 @@ sites-available/
 /Dockerfile-nginx
 /mysql-secret.yaml
 nietmeernodig/
+www/
 
 
