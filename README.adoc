@@ -1,9 +1,8 @@
 == Implementing NGINX in Kubernetes 
 
-This kubernetes implementation is quite complex. You will probably not run this
-implementation successfully in one go. Be prepared to do some debugging and
-troubleshooting. Using this guide will get you through as well as help you
-understand how it is supposed to work
+I wrote this post because the implementation became quite complex. You should be
+prepared to do some debugging and troubleshooting. Using this guide will get you
+through as well as help you understand how it is supposed to work.
 
 === A deployment with wordpress, mysql and php.
 
