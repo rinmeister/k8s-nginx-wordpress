@@ -24,18 +24,24 @@ I will give a step by step guide on how to implement the entire setup.
 
 . Obviously you need to have a kubernetes cluster. I used k3s on raspberry pi 4.
 
-. Persistent Volume manager. I use _Longhorn_. *?* See my blogpost on Longhorn.
+. Persistent Volume manager. I use _Longhorn_. I am writing anothrer post about
+  longhorn. For now refer to the official longhorn documentation.
 
-. Loadbalancer. I use _MetalLB_. *?* See my blogpost on MetalLB.
+. Loadbalancer. I use _MetalLB_. I have plpans to write a blogpost about
+  MetalLB. For now please refer to the official MetalLB documentation to install
+  it in your cluster. You will also need a configMap file that includes a
+  separate addresspool called _web_. That name is used here in the
+  documentation.
 
-. Ingress controller. I use _NGINX-ingress_. *?* See my blogpost on NGINX.
+. Ingress controller. I use _NGINX-ingress_. Please use the official
+  documentation to install this in your cluster.
 
 . This guide assumes these components. You can of course use other solutions (like
 CEPH, Traefik etc.) but these will not be covered in this guide.
 
 . To follow the guide note that I created an alias for _k=kubectl_ (too much typing).
 
-. A docker account is assumed. THe account name in this post is referenced as
+. A docker account is assumed. The account name in this post is referenced as
 *<docker-uid>*. You need to replace this with your own docker account name. Of
 course you can also us another repository or store files locally.
 
@@ -62,7 +68,7 @@ You need:
 - nginx-deployment.yaml
 - nginx-manifest.yaml
 
-Some files in the repository have an _.examplea_ extension. This means there is
+Some files in the repository have an _.example_ extension. This means there is
 information in the file you have to change for your own setup. Then save these files
 without the example extension.
 Modify each file so it represents your own setup. File paths and directories may
@@ -374,11 +380,11 @@ in k8s.
 
 ==== NGINX
 
-I use the self created private docker container I created earlier. *?* *link naar
-boven*. The deployment consists of two files: a deployment with just the
-_deployment_ section and a manifest file with the _service_ the _configMap_ and
-the _persistentVolumeClaim_ sections. Separating the deployment from the rest
-makes it easy to delete the NGINX deployment but keep the persistent files. 
+I use the self created private docker container I created <<_nginx,earlier>>.
+The deployment consists of two files: a deployment with just the _deployment_
+section and a manifest file with the _service_ the _configMap_ and the
+_persistentVolumeClaim_ sections. Separating the deployment from the rest makes
+it easy to delete the NGINX deployment but keep the persistent files. 
 
 The deployment file is as follows:
 
@@ -444,20 +450,20 @@ spec:
 ----
 
 There is a prometheus section in the file that is optional. The _env_ section
-gets the information needed to login to the MySQL database. *?* *link naar
-msql*. container port is 80, but everything is going to be redirected to 443 by
-the ingress and certmanager. Beware that this means that the SSL connection is
-terminated at ingress and all communication inside the cluster is http. In the
-container both TCP 80 and 443 have been opened. There are three volumes mounted
-in the container:
+gets the information needed to login to the MySQL database. This was configured
+<<_mysql_deployment, here>>. The container port is 80, but everything is going
+to be redirected to 443 by the ingress and certmanager. Beware that this means
+that the SSL connection is terminated at ingress and all communication inside
+the cluster is http. In the container both TCP 80 and 443 have been opened.
+There are three volumes mounted in the container:
 
 - /etc/nginx/nginx.conf: the configuration file for NGINX
 - /var/log/nginx: the log files for NGINX
 - /var/www: the webroot for NGINX
 
 the section _imagePullSecrets_ is used to pull the image from a private
-registry. This is not needed if the image is in a public registry. *?* Link naar
-hoe dit te doen.
+registry. This is not needed if the image is in a public registry. See
+<<_reading_from_a_private_docker_repository, this>> section to to set this up.
 
 The first volumeMount is a _configMap_ that is created in the manifest file. The
 name of the _configMap_ is _nginx-conf_. The second volume is an _emptyDir_. The
@@ -580,8 +586,8 @@ of course and that is what this service is for. Selector is _app: nginx_. This
 means that this service will look for pods with the label _app: nginx_ and will
 put them in its service list of pods.
 
-*?* Link naar beneden. In the section below I will explain more about ingress
-and how to expose the service to the outside world.
+In the next section I will explain more about ingress and how to expose the
+service to the outside world.
 
 ==== Loadbalancer and Ingress
 
@@ -599,7 +605,7 @@ Ingress *cannot* do is provide you with an external address. You need a
 Loadbalancer ore a Nodeport for that. Ingress could be really useful for example
 when you want to route traffic to different services (like different webservers)
 based on the URL. In my case that is not really necessary because I use virtual
-hosts on the same NGINX webserver. So why still use Ingress? That is because it
+hosts on the same NGINX webserver. So why still use Ingress That is because it
 has a really nice integration with Let's Encrypt. You can use the _cert-manager_
 to automatically request and renew certificates for your domains. As SSL
 certificates are an absolute must for all websites I decided to use ingress. The
@@ -634,6 +640,7 @@ service). This NGINX service has, again in my case, one endpoint and that is the
 POD where the NGINX container runs (2). For clarity: this is the NGINX webserver
 container, not the NGINX ingress pod.
 
+[id=_ingress_to_nginx_pod]
 .Ingress to NGINX Pod
 image::./images/k8s-ingress.drawio.png["Ingress to service",align="center"]
 
@@ -723,9 +730,9 @@ TCP/80.
 
 The ingress controller is our entry into the cluster. It must have an external
 IP adress and a configuration that selects the Pods that run _ingress-nginx_ and
-therefore have this label. To enable this we need a service yaml. You can see how
-this works from the drawing. *?* link to tekening met service erin. The service
-file looks like below.
+therefore have this label. To enable this we need a service yaml. You can see
+how this works from the <<_ingress_to_nginx_pod,drawing>>. The service file
+looks like below.
 
 .nginx-ingress-svc.yaml
 [source, yaml]
@@ -955,9 +962,9 @@ spec:
          class:  nginx
 ----
 
-In the ingress definition *?* link to ingress we saw a _tls_section_. This
-becomes important right now. This section tells kubernetes which domain name and
-which SANs (Subject Alternative Names) the certificate should be issued for. The
+In the <<_ingress,ingress definition>> we saw a _tls_section_. This becomes
+important right now. This section tells kubernetes which domain name and which
+SANs (Subject Alternative Names) the certificate should be issued for. The
 section also gives a name for the secret where the certificate is stored. So
 from the ingress you request and specify the certificate. There is no need to
 define and request the certificate in a separate file.
@@ -1065,10 +1072,9 @@ By now you should notice that the deployment defines labels. These labels are:
 
 The pod template selects the deployment that has the label app: phpfpm. The
 container used is the custom container the has been created and described
-earlier *?* link naar container sectie. It listens on port TCP/9000. Next one
-volume is mounted into the container. This is the /var/www directory that is on
-the longhorn persistent volume. This is the same volume that is also used by the
-NGINX container pods.
+<<_php,earlier>>. It listens on port TCP/9000. Next one volume is mounted into
+the container. This is the /var/www directory that is on the longhorn persistent
+volume. This is the same volume that is also used by the NGINX container pods.
 
 .phpfpm-clusterip.yaml
 [source, yaml]
