@@ -1,6 +1,6 @@
 *.sql
 sites-available/
-/README.adoc
+/README.adoc.org
 /production_issuer.yaml
 /staging_issuer.yaml
 /nginx-deployment.yaml
