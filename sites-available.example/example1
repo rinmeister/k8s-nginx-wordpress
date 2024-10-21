@@ -1,0 +1,39 @@
+server {
+
+	root /var/www/example1;
+
+	# Add index.php to the list if you are using PHP
+	index index.php index.html index.htm index.nginx-debian.html;
+
+	server_name example1.com www.example1.com;
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+		try_files $uri $uri/ =404;
+	}
+
+    location = /favicon.ico {
+            log_not_found off;
+                    access_log off;
+    }
+
+    location ~* \.(?:jpg|js|css|gif|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
+        expires max;
+        access_log off;
+    }
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~ \.php$ {
+        #include snippets/fastcgi-php.conf;
+        fastcgi_param REQUEST_METHOD $request_method;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass phpfpm:9000;
+        include fastcgi_params;
+    }
+}
