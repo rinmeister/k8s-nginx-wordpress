@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpfpm
+  labels:
+    app: phpfpm
+    layer: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpfpm
+  template:
+    metadata:
+      labels:
+        app: phpfpm
+    spec:
+      containers:
+        - name: phpfpm
+          image: rinmeister/phpfpm-mysqli:latest
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /var/www
+              name: longhorn-pvc
+      volumes:
+        - name: longhorn-pvc
+          persistentVolumeClaim:
+            claimName: nginx-pvc
+

@@ -1,0 +1,10 @@
+FROM nginx:latest
+LABEL maintainer="john@doe.com"
+RUN mkdir -p /etc/nginx/sites-available
+RUN mkdir -p /etc/nginx/sites-enabled
+COPY ./sites-available /etc/nginx/sites-available
+COPY ./ln-files.sh /root/ln-files.sh
+RUN root/ln-files.sh
+
+EXPOSE 443/tcp
+EXPOSE 80/tcp

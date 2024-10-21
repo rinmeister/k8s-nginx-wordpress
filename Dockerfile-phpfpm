@@ -1,0 +1,6 @@
+FROM php:fpm-alpine
+RUN apk add libpng-dev
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install gd
+

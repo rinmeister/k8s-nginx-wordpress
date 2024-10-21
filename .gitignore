@@ -1,0 +1,12 @@
+*.sql
+sites-available/
+/README.adoc
+/production_issuer.yaml
+/staging_issuer.yaml
+/nginx-deployment.yaml
+/nginx-ingress.yaml
+/Dockerfile-nginx
+/mysql-secret.yaml
+nietmeernodig/
+
+
